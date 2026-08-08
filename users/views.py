@@ -11,6 +11,7 @@ from .serializers import (
     UserSelfUpdateSerializer,
     GroupAddTeacherSerializer,
     GroupAddStudentSerializer,
+    UserSerializerForSwagger
 )
 from .permissions import IsAdminUser, IsTeacherUser
 from .models import Group, User
@@ -25,9 +26,9 @@ class TeacherRegisterApiView(APIView):
 
     @swagger_auto_schema(
         operation_description="Teacher Register",
-        request_body=UserSerializer,
+        request_body=UserSerializerForSwagger,
         responses={
-            200: UserSerializer
+            200: UserSerializerForSwagger
         }
     )
     def post(self, request):
@@ -43,14 +44,13 @@ class StudentRegisterApiView(APIView):
 
     @swagger_auto_schema(
         operation_description="Student Register",
-        request_body=UserSerializer,
+        request_body=UserSerializerForSwagger,
         responses={
             200: UserSerializer
         }
     )
     def post(self, request):
         data = request.data.copy()
-        data['role'] = 'student'
         student_ser = UserSerializer(data = data)
         student_ser.is_valid(raise_exception=True)
         student_ser.save()

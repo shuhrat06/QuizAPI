@@ -75,3 +75,8 @@ class GroupAddTeacherSerializer(serializers.Serializer):
 
 class GroupAddStudentSerializer(serializers.Serializer):
     student_id = serializers.IntegerField()
+
+class UserSerializerForSwagger(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username', 'password', 'first_name', 'last_name']

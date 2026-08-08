@@ -14,6 +14,7 @@ class UserShortSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'username', 'first_name', 'last_name'
         ]
+        
 
 class QuizCreateSerializer(serializers.ModelSerializer):
     allowed_students = serializers.PrimaryKeyRelatedField(
@@ -23,6 +24,11 @@ class QuizCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Quiz
         exclude = ['created_by']
+        extra_kwargs = {
+            'id': {
+                'read_only': True
+            }
+        }
 
     def validate(self, data):
         if data['start_time'] >= data['end_time']:
@@ -50,7 +56,11 @@ class QuizUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Quiz
         exclude = ['created_by', 'allowed_students']
-
+        extra_kwargs = {
+            'id': {
+                'read_only': True
+            }
+        }
 
 class OptionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -58,11 +68,26 @@ class OptionSerializer(serializers.ModelSerializer):
         fields = ['id', 'text', 'is_correct']
 
 
+class QuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Question
+        fields = ['id', 'text']
+        extra_kwargs = {
+            'id': {
+                'read_only': True
+            }
+        }
+        
 class QuestionReadSerializer(serializers.ModelSerializer):
     options = serializers.SerializerMethodField()
     class Meta:
         model = Question
         fields = ['id', 'text', 'options']
+        extra_kwargs = {
+            'id': {
+                'read_only': True
+            }
+        }
     def get_options(self, obj):
         options = obj.options.all()
         ser = OptionSerializer(options, many=True)
@@ -71,3 +96,9 @@ class QuestionReadSerializer(serializers.ModelSerializer):
 class QuizAddQuestionSerializer(serializers.Serializer):
     text = serializers.CharField()
     options = OptionSerializer(many=True)
+
+class QuizRemoveQuestionsSerializer(serializers.Serializer):
+    questions_id = serializers.PrimaryKeyRelatedField(
+        queryset = Question.objects.all(),
+        many = True
+    )
