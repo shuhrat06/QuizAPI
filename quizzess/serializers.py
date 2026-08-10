@@ -102,3 +102,6 @@ class QuizRemoveQuestionsSerializer(serializers.Serializer):
         queryset = Question.objects.all(),
         many = True
     )
+
+class AddStudentSerializer(serializers.Serializer):
+    student_id = serializers.IntegerField()

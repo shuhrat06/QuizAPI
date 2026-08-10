@@ -7,6 +7,8 @@ from .views import (
     QuizRemoveQuestionsApiView,
     QuestionRetrieveApiView,
     OptionRetrieveApiView,
+    AllowedStudentsListApiView,
+    AllowedStudentsAddListApiView,
     
 )
 
@@ -17,6 +19,8 @@ urlpatterns = [
     path('quizzes/<int:pk>/add-question/', QuizAddQuestionApiView.as_view()),
     path('quizzes/<int:pk>/questions/', QuizQuestionsListApiView.as_view()),
     path('quizzes/<int:pk>/remove-questions/',QuizRemoveQuestionsApiView.as_view()),
+    path('quizzes/<int:pk>/allowed-students/', AllowedStudentsListApiView.as_view()),
+    path('quizzes/<int:pk>/allowed-students/add/', AllowedStudentsAddListApiView.as_view()),
     path('', include(rtr.urls)),
 
     path('questions/<int:pk>/', QuestionRetrieveApiView.as_view()),

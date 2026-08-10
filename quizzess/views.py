@@ -7,6 +7,7 @@ from users.permissions import IsAdminUser, IsTeacherUser
 from rest_framework.permissions import SAFE_METHODS, IsAuthenticated, AllowAny
 
 from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 from .models import (
     Quiz,
@@ -22,9 +23,11 @@ from .serializers import (
     QuestionReadSerializer,
     QuestionSerializer,
     QuizRemoveQuestionsSerializer,
+    UserShortSerializer,
 )
 
 from .permissions import IsOwnerofQuiz, IsOwnerofQuestion, IsOwnerofOption
+from users.models import User
 
 
 class QuizViewSet(ModelViewSet):
@@ -110,3 +113,38 @@ class OptionRetrieveApiView(RetrieveUpdateDestroyAPIView):
         if self.request.method in SAFE_METHODS:
             return [AllowAny()]
         return [(IsAdminUser | IsOwnerofOption)()]
+
+class AllowedStudentsListApiView(ListAPIView):
+    permission_classes = [IsAdminUser | IsOwnerofQuiz]
+    serializer_class = UserShortSerializer
+    def get_queryset(self):
+        quiz_id = self.kwargs.get('pk')
+        quiz = get_object_or_404(Quiz, id=quiz_id)
+        self.check_object_permissions(self.request, quiz)
+        return quiz.allowed_students.all()
+
+class AllowedStudentsAddListApiView(APIView):
+    permission_classes = [IsAdminUser | IsOwnerofQuiz]
+    @swagger_auto_schema(
+        operation_description = "Add Student to Allowed Students",
+        request_body = openapi.Schema(
+            type = openapi.TYPE_OBJECT,
+            required=['student_ids'],
+            properties={
+                'student_ids': openapi.Schema(
+                    type=openapi.TYPE_ARRAY,
+                    items=openapi.Schema(type=openapi.TYPE_INTEGER),
+                    description="Ruxsat beriladigan studentlarning ID ro'yxati",
+                    example=[1, 2, 3],
+                ),
+            },
+        ),
+        responses={200: "Studentlar muvaffaqiyatli qo'shildi"}
+    )
+    def post(self, request, pk):
+        quiz = get_object_or_404(Quiz, id=pk)
+        self.check_object_permissions(self.request, quiz)
+        student_ids = request.data.get('student_ids',[])
+        students = User.objects.filter(id__in=student_ids)
+        quiz.allowed_students.add(*students)
+        return Response({'detail': "Studentlar qo'shildi"}, status=200)
